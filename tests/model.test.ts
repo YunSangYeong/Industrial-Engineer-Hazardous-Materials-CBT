@@ -88,12 +88,12 @@ describe("랜덤 학습", () => {
   it("한 과목의 모든 문항을 순회하기 전에는 중복이 없다", () => {
     let p = startPractice(bank, "hazmat-main", "일반화학");
     const ids = new Set<string>();
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 350; i++) {
       expect(ids.has(p.currentId)).toBe(false);
       ids.add(p.currentId);
       p = nextPractice(p, bank);
     }
-    expect(ids.size).toBe(40);
+    expect(ids.size).toBe(350);
     expect(p.subject).toBe("일반화학");
   });
   it("즉시 채점·연속 정답·통계를 저장하며 중복 채점을 방지한다", () => {

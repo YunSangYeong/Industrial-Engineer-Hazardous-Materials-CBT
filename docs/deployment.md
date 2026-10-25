@@ -25,4 +25,4 @@ https://YunSangYeong.github.io/Industrial-Engineer-Hazardous-Materials-CBT/
 
 ## 사용자가 지금 할 최소 동작
 
-대상 저장소에서 **Settings → Pages → Build and deployment의 Source가 GitHub Actions인지 확인·선택**한다. 현재 Source를 읽지 못했으므로 이미 설정되어 있으면 변경할 필요가 없다. 이후 마무리는 사용자에게 넘기며 에이전트는 재시도하지 않는다. 공식 규칙 확인과 880문항 부족은 배포 문제와 별도의 미완료 항목이다.
+대상 저장소에서 **Settings → Pages → Build and deployment의 Source가 GitHub Actions인지 확인·선택**한다. 현재 Source를 읽지 못했으므로 이미 설정되어 있으면 변경할 필요가 없다. 이후 마무리는 사용자에게 넘기며 에이전트는 재시도하지 않는다. 공식 규칙 확인·외부 전문가 검수는 배포 문제와 별도의 미완료 항목이다. 후속 데이터 확장으로 문제은행은 1,000개(내부 검토, 부족 0개)가 되었으며, 이 추가 요청은 배포 재시도 허가가 아니다.

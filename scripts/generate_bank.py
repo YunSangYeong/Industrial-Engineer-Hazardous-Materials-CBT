@@ -4,11 +4,13 @@ Concept manuscripts are reviewed internally for a single correct answer and
 scope. Formula tests use a separate JS implementation. Neither is expert review
 or a comparison with the official current syllabus.
 """
+import hashlib
 import csv
 import json
 import random
 from decimal import Decimal
 from pathlib import Path
+from expanded_calculations import expand
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = "https://github.com/YunSangYeong/Industrial-Engineer-Hazardous-Materials-CBT/blob/feat/hazardous-materials-cbt/docs/question-review.md"
@@ -85,9 +87,20 @@ for i in range(1, 6):
         f"모의 누출량 산술에서 일정 체적 유량 {rate} L/min이 {minutes}분간 지속되었다. 증발·회수·반응을 무시한 누출 부피는?", [rate, minutes], leaked, "L",
         f"조건: 일정 체적 유량 {rate} L/min, 지속 시간 {minutes} min. V=유량×시간={rate}×{minutes}={leaked} L이다. min이 약분된다. 실제 현장 확산이나 안전거리 산정 결과를 뜻하지 않는다.")
 
+# Freeze all previously published IDs, text, options, answer indices and notes.
+original = sorted(bank, key=lambda q: q["id"])
+assert len(original) == 120
+original_bytes = (json.dumps(original, ensure_ascii=False, indent=2)+"\n").encode()
+assert hashlib.sha256(original_bytes).hexdigest() == "ae50b304c3da73be00584704ac6ea5c0803535b001c6d30c0c859b7b3432a19a"
+for row in csv.reader((ROOT / "scripts/concepts-expanded.tsv").open(), delimiter="|"):
+    assert len(row) == 8, row
+    subject, topic, text, correct, *rest = row
+    add(subject, topic, text, correct, rest[:3], rest[3])
+assert len(bank) == 200  # original 120 + 80 new conceptual questions
+expand(numeric, SUBJECTS)
 bank.sort(key=lambda q: q["id"])
-assert len(bank) == 120
-assert all(sum(q['subject'] == s for q in bank) == 40 for s in SUBJECTS)
+assert len(bank) == 1000
+assert [sum(q['subject'] == s for q in bank) for s in SUBJECTS] == [350,325,325]
 (ROOT / "src/data/questions.json").write_text(json.dumps(bank, ensure_ascii=False, indent=2)+"\n")
 
 # Import templates remain pending and have a distinct ID and stem.
@@ -104,4 +117,18 @@ with (templates / 'questions.csv').open('w', newline='') as f:
     writer = csv.DictWriter(f, fieldnames=csv_template.keys(), lineterminator="\n")
     writer.writeheader()
     writer.writerow({k: '' if v is None else v for k,v in csv_template.items()})
-print("120 authored questions: 90 concepts + 6 numeric families × 5 conditions; 40 per subject")
+summary = {
+    "total": len(bank), "reviewed": sum(q["verificationStatus"] == "reviewed" for q in bank),
+    "target": 1000, "missing": 0,
+    "past": 0, "reconstructed": 0, "original": len(bank),
+    "concepts": sum("calculation" not in q for q in bank),
+    "numericVariants": sum("calculation" in q for q in bank),
+    "numericFamilies": len({q["family"] for q in bank if "family" in q}),
+    "subjects": {s: {"total": sum(q["subject"] == s for q in bank),
+        "concepts": sum(q["subject"] == s and "calculation" not in q for q in bank),
+        "numericVariants": sum(q["subject"] == s and "calculation" in q for q in bank)} for s in SUBJECTS},
+    "families": {family: sum(q.get("family") == family for q in bank)
+        for family in sorted({q["family"] for q in bank if "family" in q})}
+}
+(ROOT / "src/data/bank-summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2)+"\n")
+print(json.dumps(summary, ensure_ascii=False))
